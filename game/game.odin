@@ -242,7 +242,7 @@ soup_moves :: proc(g: ^Game, from: Pos) -> (m: Moves) {
 	switch soup_at(g, from) {
 	case .None:
 	case .King:
-		// The soup king never eats pancakes (provisional, November 19, 2026), so a stack wrapped
+		// The soup king never eats pancakes (the user's rule, November 19, 2026), so a stack wrapped
 		// round it can trap it.
 		for d in ORTHO {
 			p := from + d

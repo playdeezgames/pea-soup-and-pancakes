@@ -12,10 +12,10 @@ Chess crossed with Snake, set at the Swedish Thursday lunch of pea soup followed
 - The **soup side's** pieces move by chess rules, **one piece per turn**. A soup piece that captures a body segment cuts the stack there (that segment and everything behind it is lost). One that captures the head ends the game.
 - Pea-pawns spill from the pot onto the top row now and then and march down.
 - **Eat the soup king to clear the level** (a "bowl"). The next bowl's soup is thicker.
+- **The soup king cannot eat pancakes** (the user's yes, November 19, 2026, after a build-time proposal), so you can trap it by wrapping your stack round it. Without this, a lone pancake piece could never corner a fleeing king (chess's "no mate with one piece" problem). A one-turn-lookahead bot cleared no bowls in 400 games with the king able to eat pancakes, and reached bowl 4 with this rule.
 
 ## Choices made while building (provisional: the user has not confirmed them)
 
-- **The soup king cannot eat pancakes**, so you can trap it by wrapping your stack round it. Without this, a lone pancake piece could never corner a fleeing king (it's chess's "no mate with one piece" problem). A one-turn-lookahead bot cleared no bowls in 400 games with the king able to eat pancakes, and reached bowl 4 with this rule.
 - Each bowl starts afresh: a stack of one, moving as a king, at the bottom centre. The score carries over.
 - Score: each meal's chess value, plus 10 for a soup king.
 - A pancake pawn moves up the board (towards the soup), eats diagonally forward and becomes a queen on the top row. Pea-pawns move down and become queens on the bottom row.
