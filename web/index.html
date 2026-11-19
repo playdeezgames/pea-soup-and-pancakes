@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pea Soup and Pancakes</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #1a110b; color: #8a7a66; font: 12px/1.4 monospace; }
+  body { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  canvas { image-rendering: pixelated; touch-action: none; display: block; }
+  footer { margin-top: 8px; text-align: center; max-width: 90vw; }
+  footer a { color: #aaa; }
+</style>
+</head>
+<body>
+<canvas id="screen" width="144" height="176"></canvas>
+<footer>
+  Pea Soup and Pancakes by TheGrumpyGameDev. Font m5x7 by Daniel Linssen (CC0).
+  Made in Odin by an AI agent (Claude Code) at the author's direction.<span class="ll-only" hidden> Feedback by LootLocker.</span><br>
+  <span class="ll-only" hidden><a href="#" id="feedback-link">Send feedback</a> · </span><a href="https://thegrumpygamedev.itch.io/">itch.io</a> · <a href="https://playdeezgames.github.io/oeuvre-of-splorr/">more games</a>
+</footer>
+<script type="text/javascript" src="odin.js"></script>
+<script src="lootlocker.js"></script>
+<script>
+  // Feedback through the shared SPLORR!! LootLocker kit (splorr/Tech/LootLocker.md in the vault). This game has no
+  // LootLocker game yet: until domain and key are filled in and the console has Game feedback categories, the
+  // link stays hidden.
+  (function () {
+    const LL_DOMAIN = "", LL_KEY = "";
+    if (!LL_DOMAIN || !LL_KEY) return;
+    const ll = LootLocker({ domain: LL_DOMAIN, key: LL_KEY, version: "1.0.0", idKey: "pea-soup-and-pancakes.id" });
+    ll.feedbackCategories("game").then(cats => {
+      if (!cats.length) return;
+      const feedback = ll.feedbackDialog({ game: "Pea Soup and Pancakes" });
+      for (const el of document.querySelectorAll(".ll-only")) el.hidden = false;
+      document.getElementById("feedback-link").addEventListener("click", e => { e.preventDefault(); feedback.open(); });
+    }).catch(() => { /* offline or not set up: no link */ });
+  })();
+</script>
+<script>
+  const cv = document.getElementById("screen");
+  const ctx = cv.getContext("2d");
+  ctx.imageSmoothingEnabled = false;
+  const css = (rgb) => "#" + (rgb >>> 0).toString(16).padStart(6, "0");
+
+  // Whole-number zoom keeps the pixels crisp.
+  const fit = () => {
+    const z = Math.max(1, Math.floor(Math.min(innerWidth / cv.width, (innerHeight - 56) / cv.height))); // room for the footer
+    cv.style.width = cv.width * z + "px";
+    cv.style.height = cv.height * z + "px";
+  };
+  addEventListener("resize", fit);
+  fit();
+
+  // Chess piece silhouettes, 12x12, indexed by `Kind` in game/game.odin (None, Pawn, Knight, Bishop, Rook, Queen, King).
+  const PIECES = [
+    null,
+    ["............", ".....##.....", "....####....", "....####....", ".....##.....", "....####....",
+     ".....##.....", ".....##.....", "....####....", "...######...", "..########..", "............"],
+    ["............", ".....#.#....", "....#####...", "...######...", "..##.#####..", "..########..",
+     "...#..####..", ".....####...", "....#####...", "...######...", "..########..", "............"],
+    ["............", ".....##.....", "....####....", "...##.###...", "...#.####...", "...######...",
+     "....####....", ".....##.....", "....####....", "...######...", "..########..", "............"],
+    ["............", "..##.##.##..", "..########..", "..########..", "...######...", "...######...",
+     "...######...", "...######...", "...######...", "..########..", "..########..", "............"],
+    ["............", "..#..##..#..", "..#..##..#..", "..##.##.##..", "...######...", "...######...",
+     "....####....", "....####....", "...######...", "..########..", "..########..", "............"],
+    [".....##.....", "....####....", ".....##.....", "..#.####.#..", "..########..", "..########..",
+     "...######...", "....####....", "....####....", "...######...", "..########..", "............"],
+  ];
+  const pieceCache = new Map();
+  const pieceSprite = (kind, rgb, edge) => {
+    const key = kind + ":" + rgb + ":" + edge;
+    let c = pieceCache.get(key);
+    if (c) return c;
+    c = document.createElement("canvas");
+    c.width = c.height = 16;
+    const g = c.getContext("2d");
+    const mask = PIECES[kind] || [];
+    const paint = (dx, dy, colour) => {
+      g.fillStyle = css(colour);
+      mask.forEach((row, y) => { for (let x = 0; x < row.length; x++) if (row[x] === "#") g.fillRect(2 + x + dx, 2 + y + dy, 1, 1); });
+    };
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) paint(dx, dy, edge);
+    paint(0, 0, rgb);
+    pieceCache.set(key, c);
+    return c;
+  };
+
+  // Bitmap font: m5x7, ASCII 32..126 in a 16x6 grid of 8x9 cells, 7 rows above the baseline.
+  const FONT_W = 8, FONT_H = 9, FONT_BASE = 7;
+  const font = new Image();
+  font.src = "font.png";
+  const fontAdvance = [];
+  const fontTinted = new Map();
+  font.onload = () => {
+    const probe = document.createElement("canvas");
+    probe.width = font.width; probe.height = font.height;
+    const pc = probe.getContext("2d");
+    pc.drawImage(font, 0, 0);
+    const px = pc.getImageData(0, 0, font.width, font.height).data;
+    for (let i = 0; i < 95; i++) {
+      const cx = (i % 16) * FONT_W, cy = Math.floor(i / 16) * FONT_H;
+      let right = -1;
+      for (let x = 0; x < FONT_W; x++)
+        for (let y = 0; y < FONT_H; y++)
+          if (px[((cy + y) * font.width + cx + x) * 4 + 3] > 0) right = Math.max(right, x);
+      fontAdvance[i] = right < 0 ? 3 : right + 2; // ink plus one pixel of spacing
+    }
+  };
+  const tintedFont = (rgb) => {
+    let c = fontTinted.get(rgb);
+    if (!c) {
+      c = document.createElement("canvas");
+      c.width = font.width; c.height = font.height;
+      const g = c.getContext("2d");
+      g.drawImage(font, 0, 0);
+      g.globalCompositeOperation = "source-in";
+      g.fillStyle = css(rgb);
+      g.fillRect(0, 0, c.width, c.height);
+      fontTinted.set(rgb, c);
+    }
+    return c;
+  };
+  const drawBitmapText = (x, y, str, rgb, scale, centered) => {
+    if (!fontAdvance.length) return; // font not decoded yet
+    const idx = (ch) => { const i = ch.charCodeAt(0) - 32; return i >= 0 && i < 95 ? i : 0; };
+    let width = 0;
+    for (const ch of str) width += fontAdvance[idx(ch)] * scale;
+    let px = Math.round(centered ? x - width / 2 : x);
+    px = Math.max(1, Math.min(px, cv.width - 1 - width)); // keep the text on screen
+    const top = Math.round(y) - FONT_BASE * scale;
+    const sheet = tintedFont(rgb);
+    for (const ch of str) {
+      const i = idx(ch);
+      ctx.drawImage(sheet, (i % 16) * FONT_W, Math.floor(i / 16) * FONT_H, FONT_W, FONT_H,
+                    px, top, FONT_W * scale, FONT_H * scale);
+      px += fontAdvance[i] * scale;
+    }
+  };
+
+  // Sounds are small synthesised blips; order matches `Sound` in game/game.odin.
+  // Each is a list of [frequency Hz, duration s] notes on a square or triangle wave.
+  const SOUNDS = [
+    { wave: "triangle", notes: [[330, 0.05]] },                                 // Move
+    { wave: "square", notes: [[523, 0.06], [784, 0.08]] },                      // Eat
+    { wave: "square", notes: [[220, 0.08], [147, 0.12]] },                      // Cut
+    { wave: "square", notes: [[294, 0.12], [220, 0.12], [147, 0.25]] },         // Lose
+    { wave: "triangle", notes: [[523, 0.08], [659, 0.08], [784, 0.08], [1047, 0.16]] }, // Level
+    { wave: "triangle", notes: [[180, 0.04], [140, 0.06]] },                    // Spill
+  ];
+  let audio = null;
+  const unlock = () => {
+    if (audio) return;
+    try { audio = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { audio = null; }
+  };
+  addEventListener("pointerdown", unlock);
+  addEventListener("keydown", unlock);
+  const playSound = (id) => {
+    const s = SOUNDS[id];
+    if (!audio || !s) return;
+    let t = audio.currentTime;
+    for (const [f, d] of s.notes) {
+      const o = audio.createOscillator(), g = audio.createGain();
+      o.type = s.wave; o.frequency.value = f;
+      g.gain.setValueAtTime(0.08, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + d);
+      o.connect(g).connect(audio.destination);
+      o.start(t); o.stop(t + d);
+      t += d;
+    }
+  };
+
+  const memory = new odin.WasmMemoryInterface();
+
+  // A tap or click, in the canvas's logical pixels.
+  cv.addEventListener("pointerdown", (e) => {
+    const r = cv.getBoundingClientRect();
+    const x = Math.floor((e.clientX - r.left) * cv.width / r.width);
+    const y = Math.floor((e.clientY - r.top) * cv.height / r.height);
+    if (memory.exports && memory.exports.click) memory.exports.click(x, y);
+  });
+
+  // Keyboard and gamepad send one command at a time; order matches `Action` in game/game.odin.
+  const ACTION = { up: 0, down: 1, left: 2, right: 3, confirm: 4 };
+  const send = (a) => { if (memory.exports && memory.exports.input) memory.exports.input(a); };
+  const KEYS = {
+    ArrowUp: ACTION.up, KeyW: ACTION.up, ArrowDown: ACTION.down, KeyS: ACTION.down,
+    ArrowLeft: ACTION.left, KeyA: ACTION.left, ArrowRight: ACTION.right, KeyD: ACTION.right,
+    Enter: ACTION.confirm, Space: ACTION.confirm, NumpadEnter: ACTION.confirm,
+  };
+  addEventListener("keydown", (e) => {
+    if (!(e.code in KEYS) || e.ctrlKey || e.metaKey || e.altKey) return;
+    e.preventDefault();
+    if (!e.repeat || KEYS[e.code] !== ACTION.confirm) send(KEYS[e.code]);
+  });
+
+  // Gamepad (standard layout): d-pad or left stick moves, A or Start confirms. A held direction repeats.
+  const pad = { held: new Map(), next: new Map(), confirm: false };
+  const REPEAT_FIRST = 300, REPEAT = 110;
+  const pollPad = (now) => {
+    const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+    const dirs = [false, false, false, false], any = { confirm: false };
+    for (const p of pads) {
+      if (!p || p.mapping !== "standard") continue;
+      const b = (i) => p.buttons[i] && p.buttons[i].pressed;
+      const ax = p.axes[0] || 0, ay = p.axes[1] || 0;
+      dirs[0] = dirs[0] || b(12) || ay < -0.5;
+      dirs[1] = dirs[1] || b(13) || ay > 0.5;
+      dirs[2] = dirs[2] || b(14) || ax < -0.5;
+      dirs[3] = dirs[3] || b(15) || ax > 0.5;
+      any.confirm = any.confirm || b(0) || b(9);
+    }
+    dirs.forEach((on, a) => {
+      if (!on) { pad.held.delete(a); return; }
+      if (!pad.held.has(a)) { pad.held.set(a, true); pad.next.set(a, now + REPEAT_FIRST); send(a); }
+      else if (now >= pad.next.get(a)) { pad.next.set(a, now + REPEAT); send(a); }
+    });
+    if (any.confirm && !pad.confirm) send(ACTION.confirm);
+    pad.confirm = any.confirm;
+    requestAnimationFrame(pollPad);
+  };
+  requestAnimationFrame(pollPad);
+
+  const BEST_KEY = "pea-soup-and-pancakes:best";
+  odin.runWasm("game.wasm", null, {
+    canvas: {
+      fill_rect: (x, y, w, h, rgb, alpha) => {
+        ctx.globalAlpha = alpha; ctx.fillStyle = css(rgb); ctx.fillRect(x, y, w, h); ctx.globalAlpha = 1;
+      },
+      piece: (kind, x, y, rgb, edge) => {
+        ctx.drawImage(pieceSprite(kind, rgb, edge), Math.round(x), Math.round(y));
+      },
+      pancake: (x, y, head) => {
+        // A golden disc seen slightly from above, with a darker rim; the head is bigger and carries butter.
+        const cx = x + 8, cy = y + (head ? 10 : 9), rx = head ? 7 : 6, ry = head ? 4 : 3;
+        ctx.fillStyle = "#8a5520";
+        ctx.beginPath(); ctx.ellipse(cx, cy + 1, rx, ry, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#e8b04a";
+        ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#f6d27a";
+        ctx.beginPath(); ctx.ellipse(cx - 1, cy - 1, rx - 2, ry - 1.5, 0, 0, Math.PI * 2); ctx.fill();
+        if (head) { ctx.fillStyle = "#fff4b0"; ctx.fillRect(cx + 2, cy - 1, 3, 2); }
+      },
+      line: (x0, y0, x1, y1, rgb, width, alpha) => {
+        ctx.globalAlpha = alpha; ctx.strokeStyle = css(rgb); ctx.lineWidth = width; ctx.lineCap = "round";
+        ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); ctx.globalAlpha = 1;
+      },
+      play_sound: (id) => playSound(id),
+      draw_text: (x, y, ptr, len, rgb, scale, centered) => {
+        drawBitmapText(x, y, memory.loadString(ptr, len), rgb, scale, centered);
+      },
+      load_best: () => { try { return parseInt(localStorage.getItem(BEST_KEY), 10) || 0; } catch (e) { return 0; } },
+      save_best: (score) => { try { localStorage.setItem(BEST_KEY, String(score)); } catch (e) {} },
+    },
+  }, memory).then(() => {
+    // QA: ?demo opens a fixed mid-game scene.
+    if (new URLSearchParams(location.search).has("demo") && memory.exports.qa_demo) memory.exports.qa_demo();
+  });
+</script>
+</body>
+</html>
