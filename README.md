@@ -2,6 +2,8 @@
 
 Chess crossed with Snake. You are a stack of pancakes on a chessboard tablecloth. Your head moves like the last pea-soup chess piece you ate, your body trails behind you, and the soup fights back one piece at a time. Eat the soup king to clear the bowl. It's Thursday.
 
+Play it: https://playdeezgames.github.io/pea-soup-and-pancakes/
+
 Rules: [DESIGN.md](DESIGN.md).
 
 ## Controls
