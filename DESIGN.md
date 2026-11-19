@@ -14,7 +14,9 @@ Chess crossed with Snake, set at the Swedish Thursday lunch of pea soup followed
 - **Eat the soup king to clear the level** (a "bowl"). The next bowl's soup is thicker.
 - **The soup king cannot eat pancakes** (the user's yes, November 19, 2026, after a build-time proposal), so you can trap it by wrapping your stack round it. Without this, a lone pancake piece could never corner a fleeing king (chess's "no mate with one piece" problem). A one-turn-lookahead bot cleared no bowls in 400 games with the king able to eat pancakes, and reached bowl 4 with this rule.
 
-## Choices made while building (provisional: the user has not confirmed them)
+## Proposed while building, settled by the user (November 19, 2026)
+
+The user kept all of these as built, and the AI and pace are to be tuned by playing.
 
 - Each bowl starts afresh: a stack of one, moving as a king, at the bottom centre. The score carries over.
 - Score: each meal's chess value, plus 10 for a soup king.
@@ -22,5 +24,8 @@ Chess crossed with Snake, set at the Swedish Thursday lunch of pea soup followed
 - The head is stuck when it has no legal move (a pawn with nothing in front of it, say), and that ends the game ("your stack went cold").
 - **Soup AI:** it takes the head if it can, then prefers the longest cut. Otherwise every piece but the king closes in on the head, and nothing steps into the head's reach. The soup king moves only to get out of reach. Ties are broken at random.
 - **Thickening:** bowl n starts with the king, the first n of knight, bishop, rook, queen, knight, bishop, rook, knight, bishop, and 2 + n pawns (at most 8). Pea-pawns spill every max(3, 8 − n) soup turns.
+
+## Presentation
+
 - Red squares show where the soup could bite next turn. Dots and gold boxes show your legal moves.
 - Best score is kept in `localStorage` under `pea-soup-and-pancakes:best`.

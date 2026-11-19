@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-**Pea Soup and Pancakes** is a browser game (chess crossed with Snake), written in Odin and compiled to `js_wasm32`. The rules are in `DESIGN.md`, where the user's decisions are kept apart from provisional choices; do not promote a provisional choice without the user's yes. Started November 19, 2026.
+**Pea Soup and Pancakes** is a browser game (chess crossed with Snake), written in Odin and compiled to `js_wasm32`. The rules are in `DESIGN.md`; all of them are the user's decisions (November 19, 2026). Record any new rule there with the date, and mark it provisional until the user confirms it. Started November 19, 2026.
 
 ## Layout
 
