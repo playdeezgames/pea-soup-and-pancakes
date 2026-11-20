@@ -9,6 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Layout
 
 - `game/`: all rules and state (moves for both sides, the soup AI, turn flow, input, a sound queue). No JS, no `core:os`. `game_test.odin` is `#+build !js`.
+- `playtest/` (`#+build !js`, native only): scripted strategy players over many games on the real rules; findings in `STRATEGY.md`. Build with `odin build playtest -collection:psp=. -o:speed -out:build/playtest`.
 - `src/web/main.odin` (`#+build js`): drawing and input routing only. It imports `psp:game` through `-collection:psp=.`.
 - `web/index.html`: the canvas shim (12×12 piece masks in `PIECES`, indexed like `game.Kind`; drawn pancakes and syrup; m5x7 bitmap text; Web Audio blips in `SOUNDS`, ordered like `game.Sound`; keyboard and gamepad mapped to `game.Action` through `ACTION`), plus the footer back links and the hidden LootLocker feedback link (no LootLocker game yet; the user's call).
 

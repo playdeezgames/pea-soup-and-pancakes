@@ -4,7 +4,7 @@ Chess crossed with Snake. You are a stack of pancakes on a chessboard tablecloth
 
 Play it: https://playdeezgames.github.io/pea-soup-and-pancakes/
 
-Rules: [DESIGN.md](DESIGN.md).
+Rules: [DESIGN.md](DESIGN.md). Strategy, from play-testing: [STRATEGY.md](STRATEGY.md).
 
 ## Controls
 

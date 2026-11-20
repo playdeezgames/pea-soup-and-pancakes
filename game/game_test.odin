@@ -250,3 +250,13 @@ soup_king_cannot_eat_pancakes_so_a_stack_can_trap_it :: proc(t: ^testing.T) {
 	testing.expect(t, play_turn(&g, {0, 0}))
 	testing.expect_value(t, g.level, 2)
 }
+
+@(test)
+the_soup_king_threatens_nothing :: proc(t: ^testing.T) {
+	g := bare({3, 7})
+	g.soup[0][4] = .King
+	th := threats(&g)
+	for y in 0 ..< SIZE {
+		for x in 0 ..< SIZE {testing.expect(t, !th[y][x])}
+	}
+}

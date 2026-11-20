@@ -273,12 +273,12 @@ soup_moves :: proc(g: ^Game, from: Pos) -> (m: Moves) {
 	return
 }
 
-// Squares a soup piece could take a pancake on next turn (for the threat tint).
+// Squares a soup piece could take a pancake on next turn (for the threat tint). The king never can.
 threats :: proc(g: ^Game) -> (t: [SIZE][SIZE]bool) {
 	for y in 0 ..< SIZE {
 		for x in 0 ..< SIZE {
 			k := g.soup[y][x]
-			if k == .None {continue}
+			if k == .None || k == .King {continue} // the soup king never eats pancakes
 			if k == .Pawn {
 				for dx in ([2]int{-1, 1}) {
 					c := Pos{x + dx, y + 1}
