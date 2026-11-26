@@ -1,7 +1,7 @@
 # itch.io page copy: Pea Soup and Pancakes
 
 Page: https://thegrumpygamedev.itch.io/pea-soup-and-pancakes (first release booked in Coxswain for November 27, 2026, ship 34; ship only on the user's "ship"). No jam. Pasted in by hand (or set through Chrome at the user's request); nothing here is published by the repo.
-**Draft, written November 26, 2026 by Claude; the user has not approved it.** The title is still the working title (the user has not chosen one). Cover: `assets/cover.png` (630 by 500, `tools/make_cover.py`, from the game's own frames). Screenshots: `assets/screenshots/01-title.png`, `02-the-king.png`, `03-bowl-two.png` (the 144 by 176 canvas at 4x). Feedback lines left out: no LootLocker game yet (the user's call).
+**Draft, written November 26, 2026 by Claude; the user has not approved it. The itch page was created from it as a Draft through Chrome the same day (edit id 5450835; slug matches `TARGET`), with every Page setting below; read back after the save.** The title is still the working title (the user has not chosen one). Cover: `assets/cover.png` (630 by 500, `tools/make_cover.py`, from the game's own frames). Screenshots: `assets/screenshots/01-title.png`, `02-the-king.png`, `03-bowl-two.png` (the 144 by 176 canvas at 4x). Feedback lines left out: no LootLocker game yet (the user's call).
 
 ## Short description (the one-line field)
 
