@@ -1,6 +1,6 @@
 # Pea Soup and Pancakes is on itch.io
 
-*Draft for November 27, 2026 (not for the post: this line). Post type: Major update or launch. For the picture, use itch's hosted copy of the page's `02-the-king.png` screenshot once the page has it (compare it by checksum with `assets/screenshots/02-the-king.png`). Not approved by the user yet.*
+*Posted November 27, 2026 at the user's "post it" (not for the post: this line): https://thegrumpygamedev.itch.io/pea-soup-and-pancakes/devlog/1810649/pea-soup-and-pancakes-is-on-itchio . Post type Major update or launch; picture is itch's hosted copy of `02-the-king.png` (md5 matched), placed after the first paragraph.*
 
 Pea Soup and Pancakes has been playable on GitHub Pages since November 19. Today it gets a page here too.
 
